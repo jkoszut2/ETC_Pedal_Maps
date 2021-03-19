@@ -43,8 +43,9 @@ contours2 = ax2.contour(X, Y, Z, 30)
 fig2 = plt.figure(figsize=(6,6))
 
 TPa = TP[:-1]
-# TPa = np.array([20, 30, 40, 45, 50, 78, 89, 90])
-APPS = np.zeros((len(TPa), len(RPM)))
+TPa = np.array([20, 30, 40, 50, 60, 70, 80, 90])
+APPSy = np.array([0, 4, 5, 6, 8, 11, 15, 25, 45, 60, 70, 80, 90])
+APPS_Map = np.zeros((len(APPSy), len(RPM)))
 for i in range(len(RPM)):
     data = Z[:-1,i]
     # Condition data
@@ -55,28 +56,31 @@ for i in range(len(RPM)):
     normtrq = data/maxtrq
     interp_fi = interp1d(TPa, normtrq, fill_value="extrapolate") # interpolating function
     plt.plot(TPa,normtrq)
-    for j in range(len(TPa)):
-        interp_fi2 = lambda x: interp_fi(x) - TPa[j]/100 # objective function
-        minimizer = optimize.newton(interp_fi2, 0.2)
+    for j in range(len(APPSy)):
+        interp_cost = lambda x: interp_fi(x) - APPSy[j]/100 # cost function
+        initguess = 50
+        minimizer = optimize.newton(interp_cost, initguess)
         if minimizer > 100:
             minimizer = 101
         elif minimizer < 0:
             minimizer = 0
-        APPS[j,i] = minimizer
+        APPS_Map[j,i] = minimizer
 
 # Surface plot
+plt.close("all")
 fig3 = plt.figure(figsize=(6,6))
 ax = plt.axes(projection='3d')
-Xa, Ya = np.meshgrid(RPM, TPa)
-surf = ax.plot_surface(Xa, Ya, APPS, cmap='viridis')
+Xa, Ya = np.meshgrid(RPM, APPSy)
+surf = ax.plot_surface(Xa, Ya, APPS_Map, cmap='viridis')
 ax.set_title('Linear Torque Pedal Map')
 ax.set_xlabel('RPM')
 ax.set_ylabel('APPS')
 ax.set_zlabel('ATH')
 ax.set(zlim = [0,70])
 
-# plt.show(fig3)
-APPS_Map = np.concatenate((TPa[:,None],APPS),axis=1)
-DF = pd.DataFrame(APPS_Map)
+APPS_Map_Full = np.concatenate((APPSy[:,None],APPS_Map),axis=1)
+DF = pd.DataFrame(APPS_Map_Full)
 DF.columns = np.concatenate((np.array(['APPS\RPM']),RPM))
 DF.to_csv("PedalMap.csv")
+
+plt.show()
