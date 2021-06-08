@@ -9,6 +9,8 @@ from scipy.interpolate import interp1d
 import csv
 import pandas as pd
 
+showAllPlots = 0
+
 TP_20 = np.array([10.06666667,11.06666667,9.833333333,12.16666667,11.73333333,11.76666667,8.6,5.633333333,4.6,4.3,4.166666667,2.833333333,1.666666667,0.4,0,0,0,0,0,0,0,0])
 TP_30 = np.array([13.03333333,15.76666667,14.33333333,18.96666667,21.43333333,20.76666667,18.06666667,16.46666667,16.73333333,17.53333333,16.96666667,15.83333333,14.5,13.43333333,12.56666667,11.33333333,10.1,8.233333333,7.033333333,6.166666667,4.666666667,3.633333333])
 TP_40 = np.array([14.16666667,16.1,15,20.9,25.06666667,25.1,22.56666667,21.16666667,23.26666667,25.46666667,25.56666667,23.83333333,23,23.23333333,23.43333333,22.9,21.56666667,20.06666667,18.43333333,17.23333333,15.93333333,13.35333333])
@@ -67,7 +69,8 @@ for i in range(len(RPM)):
         APPS_Map[j,i] = minimizer
 
 # Surface plot
-plt.close("all")
+if not showAllPlots:
+    plt.close("all")
 fig3 = plt.figure(figsize=(6,6))
 ax = plt.axes(projection='3d')
 Xa, Ya = np.meshgrid(RPM, APPSy)
@@ -77,10 +80,24 @@ ax.set_xlabel('RPM')
 ax.set_ylabel('APPS')
 ax.set_zlabel('ATH')
 ax.set(zlim = [0,70])
+if not showAllPlots:
+    plt.show()
 
 APPS_Map_Full = np.concatenate((APPSy[:,None],APPS_Map),axis=1)
 DF = pd.DataFrame(APPS_Map_Full)
 DF.columns = np.concatenate((np.array(['APPS\RPM']),RPM))
 DF.to_csv("PedalMap.csv")
 
-plt.show()
+fig4 = plt.figure(figsize=(6,6))
+plt.plot(RPM, TP_20, label = "20")
+plt.plot(RPM, TP_30, label = "30")
+plt.plot(RPM, TP_40, label = "40")
+plt.plot(RPM, TP_50, label = "50")
+plt.plot(RPM, TP_60, label = "60")
+plt.plot(RPM, TP_70, label = "70")
+plt.plot(RPM, TP_80, label = "80")
+plt.plot(RPM, TP_90, label = "90")
+plt.plot(RPM, TP_100, label = "100")
+
+if showAllPlots:
+    plt.show()
